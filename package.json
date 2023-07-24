@@ -1,18 +1,30 @@
 {
-  "name": "canvasbot",
+  "name": "pixeplanetbot",
   "version": "1.0.0",
-  "description": "canvaspixel.net bot",
+  "description": "Pixelplanet chat bot",
   "main": "index.ts",
   "author": "Pikod",
   "license": "ISC",
   "scripts": {
-    "build": "rimraf ./dist && tsc",
-    "dev": "tsnd --log-error --respawn ./src/index.ts"
+    "build": "rimraf ./dist && tsc --project tsconfig.lib.json",
+    "build:bot": "rimraf .dist/ && tsc --build tsconfig.bot.json --verbose"
   },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ByPikod/canvaspixel-chatbot.git"
+  },
+  "bugs": {
+    "url": "https://github.com/ByPikod/canvaspixel-chatbot/issues"
+  },
+  "homepage": "https://github.com/ByPikod/canvaspixel-chatbot#readme",
   "dependencies": {
     "typescript": "^5.1.6",
     "ws": "^8.13.0"
   },
+  "keywords": [
+    "pixelplanet",
+    "bot"
+  ],
   "devDependencies": {
     "@types/node": "^20.4.2",
     "@types/ws": "^8.5.5",

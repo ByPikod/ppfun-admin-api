@@ -1,29 +1,9 @@
-import Bot from "./bot";
-import Channel from "./channel";
-import * as config from "./config.json";
-import Subscriptions from "./subscriptions";
+export * from './Bot'
+export * from './User'
+export * from './Channel'
+export * from './Message'
+export * from './Exceptions'
+export * from './Subscriptions'
 
-// Connection
-const bot = new Bot()
-
-bot.connect(
-    config.url, 
-    config.apiKey, 
-    Subscriptions.CHAT | Subscriptions.ONLINE | Subscriptions.PIXEL
-).then(() => {
-    
-    bot.subscribeChannels().then((channels) => {
-        
-        const chatNames = channels.map(
-            (channel: Channel) => channel.getName()
-        );
-
-        console.log(`Subscribed channels: ${chatNames.join(", ")}`)
-
-    })
-
-    bot.subscribeUserCounter().then((online) => {
-        console.log(online);
-    })
-
-})
+export { OnlineData } from './packets/online'
+export { RawPixelData as PixelData } from './packets/pixel'

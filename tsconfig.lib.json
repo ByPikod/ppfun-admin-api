@@ -1,0 +1,18 @@
+{
+    "compilerOptions": {
+        "target": "ESNext",
+        "lib": ["ES6"],
+        "allowJs": true,
+        "outDir": "../dist",
+        "rootDir": "./src",
+        "moduleResolution": "node",
+        "strict": true,
+        "noImplicitAny": true,
+        "allowSyntheticDefaultImports": true,
+        "esModuleInterop": true,
+        
+        "declaration": true, 
+        "declarationMap": true,
+        "composite": true
+    }
+}

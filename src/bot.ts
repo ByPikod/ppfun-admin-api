@@ -1,14 +1,17 @@
 import EventEmitter from "events"
 import WebSocket, { MessageEvent } from "ws"
-import { BotFailedToConnect, BotNotConnected } from "./exceptions"
-import { promiseWithTimeout, toArrayBuffer } from "./utils"
-import { receiveChannelsLoaded } from "./packets/channelsLoaded"
-import { receiveTextMessage } from "./packets/textMessage"
-import { receiveOnlineCounter } from "./packets/onlineCounter"
-import Packets from "./packets"
-import Channel from "./channel"
-import { User } from "./user"
-import Subscriptions from "./subscriptions"
+
+import { toArrayBuffer } from "./utils"
+import Channel from "./Channel"
+import Packets from "./Packets"
+import Subscriptions from "./Subscriptions"
+import User from "./User"
+import { BotFailedToConnect } from "./Exceptions"
+
+import { receivedChannels } from "./packets/channels"
+import { OnlineData, receivedOnline } from "./packets/online"
+import { recievedMessage } from "./packets/message"
+import { receivedPixel } from "./packets/pixel"
 
 /**
  * Events:
@@ -20,16 +23,30 @@ import Subscriptions from "./subscriptions"
  */
 class Bot extends EventEmitter {
     
-    ws: WebSocket | undefined
-    channels = new Map<number, Channel>();
-    users: Array<User> = []
-    timeout = 5000
+    _ws: WebSocket | undefined
+    _timeout: number = 5000
+
+    private subscriptions: Subscriptions = 1
+    private channels = new Map<number, Channel>();
+    private users: Array<User> = []
+    private online: OnlineData = { total: 0 }
+
+    private botName: string
+    private botChatId: number
+    private botCountry: string
+    
+    constructor(botName: string="Bot", botChatId: number=0, botCountry: string="zz") {
+        super()
+        this.botName = botName
+        this.botChatId = botChatId
+        this.botCountry = botCountry
+    }
 
     async connect(url: string, apiKey: string, subscriptions: Subscriptions) {
         
         await new Promise((resolve, reject) => {
 
-            this.ws = new WebSocket(
+            this._ws = new WebSocket(
                 url,
                 {
                     perMessageDeflate: false,
@@ -39,11 +56,41 @@ class Bot extends EventEmitter {
                 }
             );
             
-            this.ws.onerror = this.onError.bind(this)
-            this.ws.onopen = this.onOpen.bind(this)
+            this._ws.onerror = (err) => {
+                this.emit('error', err)
+                reject(err)
+            }
 
-            this.ws.on('error', (err) => reject(err))
-            this.ws.on('open', () => resolve(this.ws))
+            this._ws.onopen = () => {
+                
+                // solves tslint error
+                if (this._ws === undefined) return;
+
+                if(Subscriptions.CHAT & subscriptions)
+                    this._ws.send(
+                        JSON.stringify(
+                            ["sub", "chat"]
+                        )
+                    )
+
+                if(Subscriptions.ONLINE & subscriptions)
+                    this._ws.send(
+                        JSON.stringify(
+                            ["sub", "online"]
+                        )
+                    )
+
+                if(Subscriptions.PIXEL & subscriptions)
+                    this._ws.send(
+                        JSON.stringify(
+                            ["sub", "pxl"]
+                        )
+                    )
+
+                this.emit('open')
+                resolve(this._ws)
+
+            }
 
         }).then((ws: any) => {
             ws.onmessage = this.onPacket.bind(this)
@@ -52,29 +99,12 @@ class Bot extends EventEmitter {
         })
 
     }
-    
-    /**
-     * Called when bot successfully connected.
-     * @emits open
-     */
-    private onOpen(){
-        this.emit('open')
-    }
-
-    /**
-     * Called when an error occured on WebSocket
-     * @param err 
-     * @emits error
-     */
-    private onError(err: any){
-        this.emit('error', err)
-    }
 
     /**
      * Handle the packets received.
      * @param packet Packet data
      */
-    private onPacket({data: packet}: MessageEvent){
+    protected onPacket({data: packet}: MessageEvent){
 
         try {
 
@@ -98,45 +128,82 @@ class Bot extends EventEmitter {
      * Parse the received text packet and redirect to related function.
      * @param text received packet
      */
-    private onTextPacket(text: string) {
+    protected onTextPacket(text: string) {
     
         let jsondata;
 
         try {
+        
             jsondata = JSON.parse(text)
-        }catch {
+        
+        } catch {
+            
             console.error(`Failed to parse packet: ${text}`);
             return;
+
         }
 
-        const type: string = jsondata[0]
-        const rest = jsondata.splice(1);
+        let type: string = jsondata[0]
+        let rest = jsondata.splice(1);
 
         switch(type){
+
             case 'chans':
-                receiveChannelsLoaded(this, rest)
+                let channels = receivedChannels(this, rest)
+                for(let channel of channels) {
+                    this.channels.set(
+                        channel.getId(),
+                        channel
+                    )   
+                }
+                this.emit("channelsLoaded", channels)
                 break
+
             case 'msg':
-                receiveTextMessage(this, rest)
+                let message = recievedMessage(this, rest)
+                this.emit("chatMessage", message)
                 break
+                
         }
 
     }
 
-    private onBinaryPacket(buffer: any){
+    protected onBinaryPacket(buffer: any){
 
         if(buffer instanceof Buffer) buffer = toArrayBuffer(buffer)
         if (buffer.byteLength === 0) return;
         
-        const data = new DataView(buffer);
-        const opcode = data.getUint8(0);
+        let data = new DataView(buffer);
+        let opcode = data.getUint8(0);
 
         switch(opcode) {
+            
             case Packets.ONLINE_COUNTER_OP:
-                receiveOnlineCounter(this, data);
+                this.online = receivedOnline(this, data)
                 break;
+            
+            case Packets.PIXEL_UPDATE_OP:
+                receivedPixel(this, data)
+                break;
+
         }
     
+    }
+
+    /**
+     * Create a channel room to listen it.
+     * @param name
+     */
+    _createUser(
+        authorId: number, 
+        authorName: string, 
+        authorFlag: string
+    ): User {
+        let user = new User(authorId, authorName, authorFlag)
+        this.users.push(user)
+        
+        return user
+
     }
 
     /**
@@ -172,15 +239,6 @@ class Bot extends EventEmitter {
     }
 
     /**
-     * Create a channel room to listen it.
-     * @param name
-     */
-    createChannel(id: number, name: string) {
-        const channel = new Channel(id, name)
-        this.channels.set(id, channel)
-    }
-
-    /**
      * Returns user by its id
      * @param id User's ID
      * @returns
@@ -193,74 +251,98 @@ class Bot extends EventEmitter {
      * Create a channel room to listen it.
      * @param name
      */
-    createUser(
-        authorId: number, 
-        authorName: string, 
-        authorFlag: string
-    ): User {
-        const user = new User(authorId, authorName, authorFlag)
-        this.users.push(user)
-        
-        return user
-
-    }
-
-    /**
-     * Create a channel room to listen it.
-     * @param name
-     */
     getUsers(): Channel[] {
         return Array.from(this.channels.values());
     }
 
     /**
-     * After subscribed to channels, bot will be listening messages.
+     * Returns true if subscribed
+     * @param subscription Subscription(s)
      */
-    public async subscribeChannels() {
-        
-        if(this.ws === undefined || this.ws.readyState != WebSocket.OPEN) 
-            throw new BotNotConnected();
-
-        this.ws.send(
-            JSON.stringify(
-                ["sub", "chat"]
-            )
-        )
-
-        return promiseWithTimeout(this.timeout, new Promise((resolve, reject) => {
-
-            const channelsLoaded = (channels: any) =>
-                resolve(channels)
-
-            this.once('channelsLoaded', channelsLoaded)
-            
-        }));
-
+    checkSubscribed(subscription: Subscriptions): boolean {
+        return ((subscription & this.subscriptions) % 2) == 1
     }
 
     /**
-     * After subscribed to user counter, bot will be receiving online count every 10s.
+     * Returns raw online data.
+     * @returns 
      */
-    public async subscribeUserCounter() {
+    getOnlineData(): OnlineData {
+        return this.online;
+    }
 
-        if(this.ws === undefined || this.ws.readyState != WebSocket.OPEN) 
-            throw new BotNotConnected();
-        
-        this.ws.send(
-            JSON.stringify(
-                ["sub", "online"]
-            )
-        )
+    /**
+     * Returns the total online amount. If data is not loaded yet it will return 0
+     * @returns
+     */
+    getTotalOnline(): number {
+        return this.online.total;
+    }
 
-        return promiseWithTimeout(15000, new Promise((resolve, reject) => {
-            
-            const userCountReceived = (channels: any) =>
-                resolve(channels)
-            
-            this.once('userCountUpdated', userCountReceived)
-            
-        }));
+    /**
+     * Set bot name
+     * @param text New name
+     */
+    setBotName(newName: string) {
+        this.botName = newName
+    }
 
+    /**
+     * Returns bot name
+     * @returns 
+     */
+    getBotName(): string {
+        return this.botName
+    }
+    
+    /**
+     * Set chat id
+     * @param id New ID
+     */
+    setChatId(newId: number) {
+        this.botChatId = newId;
+    }
+
+    /**
+     * Returns bot chat ID
+     * @returns
+     */
+    getChatId(): number {
+        return this.botChatId;
+    }
+
+    /**
+     * Set bot's country
+     * @param text New country
+     */
+    setBotCountry(newCountry: string) {
+        this.botCountry = newCountry
+    }
+
+    /**
+     * Returns bot's country
+     * @returns 
+     */
+    getBotCountry(): string {
+        return this.botCountry
+    }
+
+    /**
+     * Broadcast a chat message
+     * @param message 
+     * @param name 
+     * @param userId 
+     * @param country 
+     */
+    broadcastMessage(
+        message: string,
+        name?: string, 
+        userId?: number,
+        country?: string
+    ) {
+        for(let channel of this.channels.values()){
+            channel.sendMessage(message, name, userId, country)
+        }
     }
 
 }

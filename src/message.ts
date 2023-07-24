@@ -1,5 +1,6 @@
-import Channel from "./channel";
-import { User } from "./user";
+import Channel from "./Channel";
+import User from "./User";
+import { createMention } from "./utils";
 
 class Message {
 
@@ -37,6 +38,31 @@ class Message {
         return this.content;
     }
 
+    /**
+     * Send a message to channel.
+     * @param message Message content
+     * @param name Bot username to appear
+     * @param userId Bot id to appear when ping'd
+     * @param country Bot country to appear in the flag icon
+     */
+    reply(
+        message: string,
+        name?: string,
+        userId?: number,
+        country?: string
+    ) {
+        let author = this.getAuthor()
+        let mention = createMention(
+            author.getName(),
+            author.getId()
+        )
+        this.chat.sendMessage(
+            `${mention}, ${message}`, 
+            name, 
+            userId, 
+            country
+        )
+    }
 }
 
 export default Message;

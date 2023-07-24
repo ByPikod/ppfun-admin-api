@@ -1,4 +1,4 @@
-export class User {
+class User {
 
     private id: number
     private name: string
@@ -35,3 +35,5 @@ export class User {
     }
 
 }
+
+export default User;
