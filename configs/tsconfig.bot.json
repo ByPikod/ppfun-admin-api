@@ -1,10 +1,11 @@
 {
     "compilerOptions": {
+        "module": "CommonJS",
         "target": "ESNext",
-        "lib": ["ES6"],
+        "lib": ["ES6", "DOM"],
         "allowJs": true,
-        "outDir": "./dist",
-        "rootDir": "./src",
+        "outDir": "../dist",
+        "rootDir": "../bot",
         "moduleResolution": "node",
         "strict": true,
         "noImplicitAny": true,
@@ -16,5 +17,8 @@
         {
             "path": "./tsconfig.lib.json"
         }
+    ],
+    "include": [
+        "../bot/**/*.ts"
     ]
 }

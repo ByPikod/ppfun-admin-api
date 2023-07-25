@@ -1,11 +1,12 @@
-import { info } from "console";
 import Bot from "../src/Bot";
 import Channel from "../src/Channel";
 import Subscriptions from "../src/Subscriptions";
 import { OnlineData } from "../src/packets/online";
-import * as config from "./config.json";
 import Message from "../src/Message";
+
+import * as config from "./config.json";
 import VoidBot from "./Void";
+import { info } from "./logger";
 
 // Connection
 const bot = new Bot()

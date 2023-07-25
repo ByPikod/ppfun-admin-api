@@ -1,0 +1,6 @@
+# development
+bot/
+tsconfig.bot.json
+
+# github
+promotion/
