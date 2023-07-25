@@ -18,7 +18,9 @@ To use this API, you can follow these steps:
 
 * Find your ecosystem.yml in your dist folder and define the config variable "APISOCKET_KEY" as you wish.
 * Create your NodeJS project and install the package with: 
-  > npm i ppfun-admin-api
+  ```console
+  npm i ppfun-admin-api
+  ```
 * Copy the example code and you are ready to start.
 
 ## Example Usage
