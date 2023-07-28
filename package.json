@@ -2,9 +2,8 @@
   "name": "ppfun-admin-api",
   "version": "1.0.0",
   "description": "Pixelplanet chat bot",
-  "main": "./dist/cjs/index.js",
-  "types": "./dist/cjs/types/index.d.ts",
-  "module": "./dist/esm/index.mjs",
+  "main": "./dist/index.js",
+  "types": "./dist/types/index.d.ts",
   "author": "Pikod",
   "license": "MIT",
   "scripts": {
@@ -12,9 +11,7 @@
     "prepack": "npm run build",
     "start": "ts-node dist/index.js",
     "clean": "rimraf ./dist configs/tsconfig.lib.tsbuildinfo",
-    "build": "npm run clean && npm run build:esm && npm run build:cjs",
-    "build:esm": "tsc -p ./configs/tsconfig.esm.json && move-file dist/esm/index.js dist/esm/index.mjs",
-    "build:cjs": "tsc -p ./configs/tsconfig.cjs.json",
+    "build": "npm run clean && tsc -p ./configs/tsconfig.lib.json",
     "build:bot": "npm run clean && tsc --b configs/tsconfig.bot.json",
     "dev": "tsnd --log-error --respawn ./bot/index.ts",
     "lint": "tslint -p tsconfig.json",
@@ -46,18 +43,6 @@
     "ts-node": "^10.9.1",
     "ts-node-dev": "^2.0.0",
     "typescript": "^5.1.6"
-  },
-  "exports": {
-    ".": {
-      "import": {
-        "types": "./dist/esm/types/index.d.ts",
-        "default": "./dist/esm/index.mjs"
-      },
-      "require": {
-        "types": "./dist/cjs/types/index.d.ts",
-        "default": "./dist/cjs/index.js"
-      }
-    }
   },
   "files": [
     "dist/**/*"

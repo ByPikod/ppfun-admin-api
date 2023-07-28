@@ -1,8 +1,8 @@
 {
     "compilerOptions": {
         "module": "CommonJS",
-        "target": "ESNext",
-        "lib": ["ES6"],
+        "target": "ES6",
+        "lib": ["ES6", "DOM"],
         "allowJs": true,
         "outDir": "../dist",
         "rootDir": "../src",
@@ -12,6 +12,7 @@
         "esModuleInterop": true,
         "declaration": true, 
         "declarationMap": true,
+        "declarationDir": "../dist/types",
         "composite": true
     },
     "include": [
