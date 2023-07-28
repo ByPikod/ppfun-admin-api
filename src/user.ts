@@ -1,4 +1,4 @@
-class User {
+export class User {
 
     private id: number
     private name: string
@@ -25,7 +25,7 @@ class User {
     getName(): string {
         return this.name;
     }
-
+    
     /**
      * Returns user flag
      * @returns 
@@ -35,5 +35,3 @@ class User {
     }
 
 }
-
-export default User;

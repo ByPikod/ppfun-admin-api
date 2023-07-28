@@ -1,5 +1,3 @@
-import { BotRequestTimedOut } from "./Exceptions";
-
 export function promiseWithTimeout(millis: number, promise: Promise<any>) {
     
     let timeout = new Promise((resolve, reject) =>
@@ -16,7 +14,7 @@ export function promiseWithTimeout(millis: number, promise: Promise<any>) {
 
 };
 
-export function toArrayBuffer(buffer: Buffer) {
+export function toArrayBuffer(buffer: any) {
 
     let arrayBuffer = new ArrayBuffer(buffer.length);
     let view = new Uint8Array(arrayBuffer);

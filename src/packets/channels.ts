@@ -1,5 +1,5 @@
-import Bot from "../Bot";
-import Channel from "../Channel";
+import { Bot } from "../bot";
+import { Channel } from "../channel";
 
 /**
  * Turns the raw channels data into Channel objects and returns it

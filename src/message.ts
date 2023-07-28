@@ -1,8 +1,8 @@
-import Channel from "./Channel";
-import User from "./User";
+import { Channel } from "./channel";
+import { User } from "./user";
 import { createMention } from "./utils";
 
-class Message {
+export class Message {
 
     private author: User
     private chat: Channel
@@ -64,5 +64,3 @@ class Message {
         )
     }
 }
-
-export default Message;

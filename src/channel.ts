@@ -1,10 +1,10 @@
-import Bot from "./Bot";
-import Message from "./Message";
+import { Bot } from "./bot";
+import { Message } from "./message";
 
 /**
  * Represents a chat room in the chat.
  */
-class Channel {
+export class Channel {
 
     private messages: Array<Message> = []
 
@@ -69,5 +69,3 @@ class Channel {
     }
 
 }
-
-export default Channel

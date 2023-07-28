@@ -1,5 +1,5 @@
-import Bot from "../src/Bot";
-import Message from "../src/Message";
+import Bot from "../src/bot";
+import Message from "../src/message";
 
 class VoidBot {
 

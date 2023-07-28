@@ -1,8 +1,8 @@
-import Bot from "../src/Bot";
-import Channel from "../src/Channel";
-import Subscriptions from "../src/Subscriptions";
+import Bot from "../src/bot";
+import Channel from "../src/channel";
+import Subscriptions from "../src/subscriptions";
 import { OnlineData } from "../src/packets/online";
-import Message from "../src/Message";
+import Message from "../src/message";
 
 import * as config from "./config.json";
 import VoidBot from "./Void";

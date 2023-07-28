@@ -1,13 +1,13 @@
 import EventEmitter from "events"
 import WebSocket, { MessageEvent } from "ws"
 
-import { toArrayBuffer } from "./utils"
-import Channel from "./Channel"
-import Packets from "./Packets"
-import Subscriptions from "./Subscriptions"
-import User from "./User"
-import { BotFailedToConnect } from "./Exceptions"
+import { Channel } from "./channel"
+import { Packets } from "./packets"
+import { Subscriptions } from "./subscriptions"
+import { User } from "./user"
 
+import { toArrayBuffer } from "./utils"
+import { BotFailedToConnect } from "./exceptions"
 import { receivedChannels } from "./packets/channels"
 import { OnlineData, receivedOnline } from "./packets/online"
 import { recievedMessage } from "./packets/message"
@@ -15,13 +15,13 @@ import { receivedPixel } from "./packets/pixel"
 
 /**
  * Events:
- * @emits openl.
+ * @emits open
  * @emits error
  * @emits channelsLoaded
  * @emits userCountUpdated
  * @emits chatMessage
  */
-class Bot extends EventEmitter {
+export class Bot extends EventEmitter {
     
     _ws: WebSocket | undefined
     _timeout: number = 5000
@@ -346,5 +346,3 @@ class Bot extends EventEmitter {
     }
 
 }
-
-export default Bot;

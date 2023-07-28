@@ -6,7 +6,7 @@
  * we export code so that webpack can directly resolve them
  */
 
-enum Packets {
+export enum Packets {
     REG_CANVAS_OP = 0xA0,
     REG_CHUNK_OP = 0xA1,
     DEREG_CHUNK_OP = 0xA2,
@@ -22,15 +22,3 @@ enum Packets {
     PIXEL_UPDATE_MB_OP = 0xC5,
     CAPTCHA_RETURN_OP = 0xC6
 }
-
-export default Packets;
-
-
-
-
-
-
-
-
-
-

@@ -1,6 +1,6 @@
-import { BotFailedToFetchChannel } from "../Exceptions"
-import Bot from "../Bot"
-import Message from "../Message"
+import { BotFailedToFetchChannel } from "../exceptions"
+import { Bot } from "../bot"
+import { Message } from "../message"
 
 /**
  * Turns the data pack into a Message object and reutrns it
