@@ -17,16 +17,36 @@ First of all, you need to have your own pixelplanet.fun clone that you can conne
 To use this API, you can follow these steps:
 
 * Find your ecosystem.yml in your dist folder and define the config variable "APISOCKET_KEY" as you wish.
-* Create your NodeJS project and install the package with: 
+* Create your Node project and install the package with: 
   ```console
   npm i ppfun-admin-api
   ```
-* Copy the example code and you are ready to start.
+* Paste the example code into your "index.js" file and you are ready to go!
 
 ## Example Usage
 
 ```js
+const ppfun = require("ppfun-admin-api")
+const config = require("./config.json");
 
+const bot = new ppfun.Bot();
+
+// Notify when connected
+bot.addListener("open", () => {
+    console.log("Connected to the server!")
+})
+
+// Log messages
+bot.addListener("chatMessage", (message) => {
+    console.log(`${message.getAuthor().getName()}: ${message.getContent()}`)
+})
+
+// Connect
+bot.connect(
+    config.url, 
+    config.apiKey, 
+    ppfun.Subscriptions.CHAT
+)
 ```
 
 ## Contributions
