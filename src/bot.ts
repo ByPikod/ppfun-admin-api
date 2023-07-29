@@ -18,7 +18,8 @@ import { receivedPixel } from "./packets/pixel"
  * @emits open
  * @emits error
  * @emits channelsLoaded
- * @emits userCountUpdated
+ * @emits onlineCounter
+ * @emits pixelUpdate
  * @emits chatMessage
  */
 export class Bot extends EventEmitter {
