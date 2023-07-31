@@ -29,7 +29,7 @@ export class Bot extends EventEmitter {
     _ws: WebSocket | undefined
     _timeout: number = 5000
 
-    private subscriptions: Subscriptions
+    private subscriptions: Subscriptions = 0
     private channels = new Map<number, Channel>();
     private users: Array<User> = []
     private online: OnlineData = { total: 0 }
