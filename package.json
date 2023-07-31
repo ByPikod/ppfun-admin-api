@@ -1,6 +1,6 @@
 {
   "name": "ppfun-admin-api",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Pixelplanet chat bot",
   "main": "./dist/index.js",
   "types": "./dist/types/index.d.ts",
