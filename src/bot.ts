@@ -12,6 +12,7 @@ import { receivedChannels } from "./packets/channels"
 import { OnlineData, receivedOnline } from "./packets/online"
 import { recievedMessage } from "./packets/message"
 import { receivedPixel } from "./packets/pixel"
+import { createPingPacket } from "./packets/ping"
 
 /**
  * Events:
@@ -21,13 +22,14 @@ import { receivedPixel } from "./packets/pixel"
  * @emits onlineCounter
  * @emits pixelUpdate
  * @emits chatMessage
+ * @emits heartbeat
  */
 export class Bot extends EventEmitter {
     
     _ws: WebSocket | undefined
     _timeout: number = 5000
 
-    private subscriptions: Subscriptions = 1
+    private subscriptions: Subscriptions
     private channels = new Map<number, Channel>();
     private users: Array<User> = []
     private online: OnlineData = { total: 0 }
@@ -35,6 +37,10 @@ export class Bot extends EventEmitter {
     private botName: string
     private botChatId: number
     private botCountry: string
+
+    private timeLastPing: number = 0
+    private timeLastSent: number = 0
+    private heartbeatTimer?: NodeJS.Timer
     
     constructor(botName: string="Bot", botChatId: number=0, botCountry: string="zz") {
         super()
@@ -43,7 +49,9 @@ export class Bot extends EventEmitter {
         this.botCountry = botCountry
     }
 
-    async connect(url: string, apiKey: string, subscriptions: Subscriptions) {
+    async connect(url: string, apiKey: string, subscriptions: Subscriptions = 0) {
+        
+        this.subscriptions = subscriptions;
         
         await new Promise((resolve, reject) => {
 
@@ -63,34 +71,9 @@ export class Bot extends EventEmitter {
             }
 
             this._ws.onopen = () => {
-                
-                // solves tslint error
-                if (this._ws === undefined) return;
-
-                if(Subscriptions.CHAT & subscriptions)
-                    this._ws.send(
-                        JSON.stringify(
-                            ["sub", "chat"]
-                        )
-                    )
-
-                if(Subscriptions.ONLINE & subscriptions)
-                    this._ws.send(
-                        JSON.stringify(
-                            ["sub", "online"]
-                        )
-                    )
-
-                if(Subscriptions.PIXEL & subscriptions)
-                    this._ws.send(
-                        JSON.stringify(
-                            ["sub", "pxl"]
-                        )
-                    )
-
+                this.onSocketReady()
                 this.emit('open')
                 resolve(this._ws)
-
             }
 
         }).then((ws: any) => {
@@ -100,12 +83,83 @@ export class Bot extends EventEmitter {
         })
 
     }
+    
+    //*****************************//
+    //        EVENT LISTENERS
+    //*****************************//
+
+    protected onSocketReady() {
+
+        // solves tslint error
+        if (this._ws?.readyState !== WebSocket.OPEN)
+            return;
+
+        // Subscriptions
+
+        if(this.checkSubscribed(Subscriptions.CHAT))
+            this._ws.send(
+                JSON.stringify(
+                    ["sub", "chat"]
+                )
+            )
+
+        if(this.checkSubscribed(Subscriptions.ONLINE))
+            this._ws.send(
+                JSON.stringify(
+                    ["sub", "online"]
+                )
+            )
+
+        if(this.checkSubscribed(Subscriptions.PIXEL))
+            this._ws.send(
+                JSON.stringify(
+                    ["sub", "pxl"]
+                )
+            )
+        
+        // Health checks
+        const now = Date.now();
+        this.timeLastPing = now
+        this.timeLastSent = now
+
+        this.heartbeatTimer = setInterval(this.heartbeat.bind(this), 2000)
+            
+    }
+
+    //*****************************//
+    //           PRIVATE
+    //*****************************//
+
+    /**
+     * Pping the server in every 25 seconds.
+     * @returns Returns false if connection is terminated.
+     */
+    protected heartbeat(): boolean {
+
+        if (this._ws?.readyState !== WebSocket.OPEN) {
+            this.close("Websocket is closed somehow")
+            return false;
+        }
+
+        const now = Date.now();
+        /*
+        if (now - 30000 > this.timeLastPing) {
+            this.close("Server is silent, websocket closed.")
+            return false;
+        }
+        */
+        if (now - 23000 > this.timeLastSent) this._pingServer()
+        return true;
+
+    }
 
     /**
      * Handle the packets received.
      * @param packet Packet data
      */
     protected onPacket({data: packet}: MessageEvent){
+
+        this.timeLastPing = Date.now();
 
         try {
 
@@ -208,6 +262,26 @@ export class Bot extends EventEmitter {
     }
 
     /**
+     * Ping server and return true if packet successfully sent.
+     * @returns boolean
+     */
+    _pingServer(): boolean {
+        // solves tslint error
+        if (this._ws?.readyState !== WebSocket.OPEN)
+            return false;
+        // make sure we send something at least all 25s
+        this._ws.send(createPingPacket());
+        this.timeLastSent = Date.now();
+        this.emit("heartbeat")
+        return true
+    }
+
+    
+    //*****************************//
+    //             API
+    //*****************************//
+
+    /**
      * Returns Channel object by the id.
      * @param name Channel name
      * @returns Channel
@@ -260,8 +334,8 @@ export class Bot extends EventEmitter {
      * Returns true if subscribed
      * @param subscription Subscription(s)
      */
-    checkSubscribed(subscription: Subscriptions): boolean {
-        return ((subscription & this.subscriptions) % 2) == 1
+    checkSubscribed(subscription: Subscriptions): number {
+        return this.subscriptions & subscription
     }
 
     /**
@@ -344,6 +418,15 @@ export class Bot extends EventEmitter {
         for(let channel of this.channels.values()){
             channel.sendMessage(message, name, userId, country)
         }
+    }
+
+    /**
+     * Terminate connection
+     */
+    close(message: string) {
+        clearInterval(this.heartbeatTimer)
+        this._ws?.close()
+        this.emit("close", message)
     }
 
 }

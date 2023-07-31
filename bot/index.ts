@@ -1,8 +1,10 @@
-import Bot from "../src/bot";
-import Channel from "../src/channel";
-import Subscriptions from "../src/subscriptions";
-import { OnlineData } from "../src/packets/online";
-import Message from "../src/message";
+import { 
+    Bot, 
+    Channel, 
+    Subscriptions, 
+    Message, 
+    OnlineData 
+} from "../src";
 
 import * as config from "./config.json";
 import VoidBot from "./Void";
@@ -45,12 +47,23 @@ bot.on("onlineCounter", (online: OnlineData) => {
     info(`Online: ${online.total}`)
 })
 
+/**
+ * Health checkups
+ */
+bot.on("close", (err: string) => {
+    info(`Socket closed: ${err}`)
+})
+
+bot.on("heartbeat", () => {
+    info("Ping sent!")
+})
+
 bot.connect(
     config.url, 
-    config.apiKey, 
-    Subscriptions.CHAT | Subscriptions.ONLINE
+    config.apiKey,
+    Subscriptions.CHAT + Subscriptions.ONLINE
 ).then(() => {
-    console.log("Bot connected!")
+    info("Bot connected!")
 })
 
 const voidbot = new VoidBot(bot)
