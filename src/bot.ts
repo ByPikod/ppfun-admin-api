@@ -6,7 +6,7 @@ import { Packets } from "./packets"
 import { Subscriptions } from "./subscriptions"
 import { User } from "./user"
 
-import { toArrayBuffer } from "./utils"
+import { promiseWithTimeout, toArrayBuffer } from "./utils"
 import { BotFailedToConnect } from "./exceptions"
 import { receivedChannels } from "./packets/channels"
 import { OnlineData, receivedOnline } from "./packets/online"
@@ -30,7 +30,7 @@ export class Bot extends EventEmitter {
     _timeout: number = 5000
 
     private subscriptions: Subscriptions = 0
-    private channels = new Map<number, Channel>();
+    private channels = new Map<number, Channel>()
     private users: Array<User> = []
     private online: OnlineData = { total: 0 }
 
@@ -51,7 +51,7 @@ export class Bot extends EventEmitter {
 
     async connect(url: string, apiKey: string, subscriptions: Subscriptions = 0) {
         
-        this.subscriptions = subscriptions;
+        this.subscriptions = subscriptions
         
         await new Promise((resolve, reject) => {
 
@@ -63,7 +63,7 @@ export class Bot extends EventEmitter {
                         'Authorization': `Bearer ${apiKey}`
                     }
                 }
-            );
+            )
             
             this._ws.onerror = (err) => {
                 this.emit('error', err)
@@ -92,7 +92,7 @@ export class Bot extends EventEmitter {
 
         // solves tslint error
         if (this._ws?.readyState !== WebSocket.OPEN)
-            return;
+            return
 
         // Subscriptions
 
@@ -118,7 +118,7 @@ export class Bot extends EventEmitter {
             )
         
         // Health checks
-        const now = Date.now();
+        const now = Date.now()
         this.timeLastPing = now
         this.timeLastSent = now
 
@@ -131,25 +131,25 @@ export class Bot extends EventEmitter {
     //*****************************//
 
     /**
-     * Pping the server in every 25 seconds.
+     * Pping the server in every 5 seconds.
      * @returns Returns false if connection is terminated.
      */
     protected heartbeat(): boolean {
 
         if (this._ws?.readyState !== WebSocket.OPEN) {
             this.close("Websocket is closed somehow")
-            return false;
+            return false
         }
 
-        const now = Date.now();
+        const now = Date.now()
         /*
         if (now - 30000 > this.timeLastPing) {
             this.close("Server is silent, websocket closed.")
-            return false;
+            return false
         }
         */
-        if (now - 23000 > this.timeLastSent) this._pingServer()
-        return true;
+        if (now - 5000 > this.timeLastSent) this._pingServer()
+        return true
 
     }
 
@@ -159,21 +159,21 @@ export class Bot extends EventEmitter {
      */
     protected onPacket({data: packet}: MessageEvent){
 
-        this.timeLastPing = Date.now();
+        this.timeLastPing = Date.now()
 
         try {
 
             if (typeof packet == "string")
-                this.onTextPacket(packet);
+                this.onTextPacket(packet)
             else
-                this.onBinaryPacket(packet);
+                this.onBinaryPacket(packet)
 
           } catch (err) {
 
             console.log(
                 `An error occurred while parsing websocket message ${packet}`,
                 err,
-            );
+            )
 
         }
 
@@ -185,7 +185,7 @@ export class Bot extends EventEmitter {
      */
     protected onTextPacket(text: string) {
     
-        let jsondata;
+        let jsondata
 
         try {
         
@@ -193,13 +193,13 @@ export class Bot extends EventEmitter {
         
         } catch {
             
-            console.error(`Failed to parse packet: ${text}`);
-            return;
+            console.error(`Failed to parse packet: ${text}`)
+            return
 
         }
 
         let type: string = jsondata[0]
-        let rest = jsondata.splice(1);
+        let rest = jsondata.splice(1)
 
         switch(type){
 
@@ -218,6 +218,10 @@ export class Bot extends EventEmitter {
                 let message = recievedMessage(this, rest)
                 this.emit("chatMessage", message)
                 break
+            
+            case 'flag':
+                this.emit('flag', rest)
+                break
                 
         }
 
@@ -226,20 +230,20 @@ export class Bot extends EventEmitter {
     protected onBinaryPacket(buffer: any){
 
         if(buffer instanceof Buffer) buffer = toArrayBuffer(buffer)
-        if (buffer.byteLength === 0) return;
+        if (buffer.byteLength === 0) return
         
-        let data = new DataView(buffer);
-        let opcode = data.getUint8(0);
+        let data = new DataView(buffer)
+        let opcode = data.getUint8(0)
 
         switch(opcode) {
             
             case Packets.ONLINE_COUNTER_OP:
                 this.online = receivedOnline(this, data)
-                break;
+                break
             
             case Packets.PIXEL_UPDATE_OP:
                 receivedPixel(this, data)
-                break;
+                break
 
         }
     
@@ -268,10 +272,10 @@ export class Bot extends EventEmitter {
     _pingServer(): boolean {
         // solves tslint error
         if (this._ws?.readyState !== WebSocket.OPEN)
-            return false;
+            return false
         // make sure we send something at least all 25s
-        this._ws.send(createPingPacket());
-        this.timeLastSent = Date.now();
+        this._ws.send(createPingPacket())
+        this.timeLastSent = Date.now()
         this.emit("heartbeat")
         return true
     }
@@ -282,12 +286,39 @@ export class Bot extends EventEmitter {
     //*****************************//
 
     /**
+     * Returns flag from the ID 
+     * @param userId 
+     * @returns
+     */
+    fetchFlag(userId: number): Promise<[string, string]> {
+        
+        return promiseWithTimeout(5000, new Promise((res) => {
+            
+            this._ws?.send(
+                JSON.stringify(
+                    ["getflag", userId]
+                )
+            )
+
+            const flagListener = (data: any) => {
+                if(data[0] === userId) res(data)
+                // listen once more
+                this.once("flag", flagListener)
+            } 
+    
+            this.once("flag", flagListener)
+
+        }))
+
+    }
+
+    /**
      * Returns Channel object by the id.
      * @param name Channel name
      * @returns Channel
      */
     getChannelById(id: number): Channel | undefined {
-        return this.channels.get(id);
+        return this.channels.get(id)
     }
 
     /**
@@ -298,10 +329,10 @@ export class Bot extends EventEmitter {
     getChannelByName(name: string): Channel | undefined {
         
         for(let channel of this.channels.values()){
-            if(channel.getName() == name) return channel;
+            if(channel.getName() == name) return channel
         }
 
-        return undefined;
+        return undefined
         
     }
 
@@ -310,7 +341,7 @@ export class Bot extends EventEmitter {
      * @param name
      */
     getChannels(): Channel[] {
-        return Array.from(this.channels.values());
+        return Array.from(this.channels.values())
     }
 
     /**
@@ -327,7 +358,7 @@ export class Bot extends EventEmitter {
      * @param name
      */
     getUsers(): Channel[] {
-        return Array.from(this.channels.values());
+        return Array.from(this.channels.values())
     }
 
     /**
@@ -343,7 +374,7 @@ export class Bot extends EventEmitter {
      * @returns 
      */
     getOnlineData(): OnlineData {
-        return this.online;
+        return this.online
     }
 
     /**
@@ -351,7 +382,7 @@ export class Bot extends EventEmitter {
      * @returns
      */
     getTotalOnline(): number {
-        return this.online.total;
+        return this.online.total
     }
 
     /**
@@ -375,7 +406,7 @@ export class Bot extends EventEmitter {
      * @param id New ID
      */
     setChatId(newId: number) {
-        this.botChatId = newId;
+        this.botChatId = newId
     }
 
     /**
@@ -383,7 +414,7 @@ export class Bot extends EventEmitter {
      * @returns
      */
     getChatId(): number {
-        return this.botChatId;
+        return this.botChatId
     }
 
     /**

@@ -7,7 +7,6 @@ import {
 } from "../src";
 
 import * as config from "./config.json";
-import VoidBot from "./Void";
 import { info } from "./logger";
 
 // Connection
@@ -64,6 +63,7 @@ bot.connect(
     Subscriptions.CHAT + Subscriptions.ONLINE
 ).then(() => {
     info("Bot connected!")
+    bot.fetchFlag(1).then((data) => {
+        info(`Flag: ${data[0]}, ID: ${data[1]}`)
+    })
 })
-
-const voidbot = new VoidBot(bot)
