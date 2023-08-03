@@ -8,10 +8,10 @@ import { Channel } from "../channel";
  */
 export function receivedChannels(bot: Bot, data: any): Channel[] {
     
-    let channels: Channel[] = [];
+    const channels: Channel[] = [];
 
-    for(let result of data) {
-        let channel = new Channel(bot, result[0], result[1])
+    for(const result of data) {
+        const channel = new Channel(bot, result[0], result[1])
         channels.push(channel)
     }
 

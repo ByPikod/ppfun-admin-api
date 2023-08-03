@@ -1,6 +1,6 @@
 export function promiseWithTimeout(millis: number, promise: Promise<any>) {
     
-    let timeout = new Promise((resolve, reject) =>
+    const timeout = new Promise((resolve, reject) =>
         setTimeout(
             () => reject(`Timed out after ${millis} ms.`), 
             millis
@@ -16,8 +16,8 @@ export function promiseWithTimeout(millis: number, promise: Promise<any>) {
 
 export function toArrayBuffer(buffer: any) {
 
-    let arrayBuffer = new ArrayBuffer(buffer.length);
-    let view = new Uint8Array(arrayBuffer);
+    const arrayBuffer = new ArrayBuffer(buffer.length);
+    const view = new Uint8Array(arrayBuffer);
 
     for (let i = 0; i < buffer.length; ++i) {
       view[i] = buffer[i];

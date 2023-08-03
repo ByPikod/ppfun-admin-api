@@ -10,15 +10,15 @@ export type OnlineData = {
 */
 export function unpackOnlineCounter(data: DataView): OnlineData {
 
-    let online: OnlineData = {
+    const online: OnlineData = {
         total: data.getUint16(1)
     };
     
     let off = data.byteLength;
 
     while (off > 3) {
-        let onlineUsers = data.getUint16(off -= 2);
-        let canvas = data.getUint8(off -= 1);
+        const onlineUsers = data.getUint16(off -= 2);
+        const canvas = data.getUint8(off -= 1);
         online[canvas] = onlineUsers;
     }
 
@@ -31,7 +31,7 @@ export function unpackOnlineCounter(data: DataView): OnlineData {
 * @emits userCountUpdated
 */
 export function receivedOnline(bot: Bot, data: DataView): OnlineData {
-    let unpack = unpackOnlineCounter(data)
+    const unpack = unpackOnlineCounter(data)
     bot.emit("onlineCounter", unpack)
     return unpack
 }

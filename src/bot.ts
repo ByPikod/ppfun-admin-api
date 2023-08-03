@@ -198,14 +198,14 @@ export class Bot extends EventEmitter {
 
         }
 
-        let type: string = jsondata[0]
-        let rest = jsondata.splice(1)
+        const type: string = jsondata[0]
+        const rest = jsondata.splice(1)
 
         switch(type){
 
             case 'chans':
-                let channels = receivedChannels(this, rest)
-                for(let channel of channels) {
+                const channels = receivedChannels(this, rest)
+                for(const channel of channels) {
                     this.channels.set(
                         channel.getId(),
                         channel
@@ -215,7 +215,7 @@ export class Bot extends EventEmitter {
                 break
 
             case 'msg':
-                let message = recievedMessage(this, rest)
+                const message = recievedMessage(this, rest)
                 this.emit("chatMessage", message)
                 break
             
@@ -232,8 +232,8 @@ export class Bot extends EventEmitter {
         if(buffer instanceof Buffer) buffer = toArrayBuffer(buffer)
         if (buffer.byteLength === 0) return
         
-        let data = new DataView(buffer)
-        let opcode = data.getUint8(0)
+        const data = new DataView(buffer)
+        const opcode = data.getUint8(0)
 
         switch(opcode) {
             
@@ -258,7 +258,7 @@ export class Bot extends EventEmitter {
         authorName: string, 
         authorFlag: string
     ): User {
-        let user = new User(authorId, authorName, authorFlag)
+        const user = new User(authorId, authorName, authorFlag)
         this.users.push(user)
         
         return user
@@ -328,7 +328,7 @@ export class Bot extends EventEmitter {
      */
     getChannelByName(name: string): Channel | undefined {
         
-        for(let channel of this.channels.values()){
+        for(const channel of this.channels.values()){
             if(channel.getName() == name) return channel
         }
 
@@ -446,7 +446,7 @@ export class Bot extends EventEmitter {
         userId?: number,
         country?: string
     ) {
-        for(let channel of this.channels.values()){
+        for(const channel of this.channels.values()){
             channel.sendMessage(message, name, userId, country)
         }
     }

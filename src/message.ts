@@ -51,8 +51,8 @@ export class Message {
         userId?: number,
         country?: string
     ) {
-        let author = this.getAuthor()
-        let mention = createMention(
+        const author = this.getAuthor()
+        const mention = createMention(
             author.getName(),
             author.getId()
         )
