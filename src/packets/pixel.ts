@@ -10,6 +10,11 @@ export type RawPixelChunk = [
     RawPixelData[]
 ]
 
+/**
+ * Dehydrates binary pixel packet
+ * @param data 
+ * @returns 
+ */
 export function unpackPixelUpdate(data: DataView): RawPixelChunk {
 
     const i = data.getUint8(1); // chunk x
@@ -36,6 +41,12 @@ export function unpackPixelUpdate(data: DataView): RawPixelChunk {
 
 }
 
+/**
+ * Called from Bot to handle pixel packet
+ * @param bot 
+ * @param data 
+ * @returns 
+ */
 export function receivedPixel(bot: Bot, data: DataView): RawPixelChunk {
     const unpack = unpackPixelUpdate(data)
     bot.emit("pixelUpdate", unpack)
