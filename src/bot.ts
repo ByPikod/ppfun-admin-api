@@ -292,7 +292,7 @@ export class Bot extends EventEmitter {
      */
     fetchFlag(userId: number): Promise<[string, string]> {
         
-        return promiseWithTimeout(5000, new Promise((res) => {
+        return promiseWithTimeout(this._timeout, new Promise((res) => {
             
             this._ws?.send(
                 JSON.stringify(
