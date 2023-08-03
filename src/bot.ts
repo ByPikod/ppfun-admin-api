@@ -258,8 +258,9 @@ export class Bot extends EventEmitter {
         authorName: string, 
         authorFlag: string
     ): User {
+        
         const user = new User(authorId, authorName, authorFlag)
-        this.users.push(user)
+        this.users[user.getId()] = user
         
         return user
 
@@ -350,6 +351,8 @@ export class Bot extends EventEmitter {
      * @returns
      */
     getUserById(id: number): User | undefined {
+        console.log(`Requested for: ${id}`)
+        console.log(this.users)
         return this.users[id]
     }
 
