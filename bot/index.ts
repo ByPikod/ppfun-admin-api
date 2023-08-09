@@ -25,9 +25,12 @@ bot.on("channelsLoaded", (channels: Channel[]) => {
 
     const channel = bot.getChannelByName("en")
     if(!channel) return;
+    
+    /*
     bot.sendAnnouncement("Test announcement", channel, true).then((data: any) => {
         info(`Announcement sent, total receivers: ${data[0]}`)
     });
+    */
     
 })
 
@@ -59,17 +62,29 @@ bot.on("close", (err: string) => {
     info(`Socket closed: ${err}`)
 })
 
+/* Listen heartbeats */
 bot.on("heartbeat", () => {
     info("Ping sent!")
+})
+
+bot.on("open", () => {
+
+    info("Bot connected!")
+    
+    // Try fetch flag feature
+    bot.fetchFlag(1).then((data) => {
+        info(`Flag: ${data[0]}, ID: ${data[1]}`)
+    })
+
+    // Try reconnecting feature
+    setTimeout(() => {
+        bot._ws?.close()
+    }, 20000);
+
 })
 
 bot.connect(
     config.url, 
     config.apiKey,
     Subscriptions.CHAT + Subscriptions.ONLINE
-).then(() => {
-    info("Bot connected!")
-    bot.fetchFlag(1).then((data) => {
-        info(`Flag: ${data[0]}, ID: ${data[1]}`)
-    })
-})  
+)

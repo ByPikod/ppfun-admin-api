@@ -14,6 +14,13 @@ import { recievedMessage } from "./packets/message"
 import { receivedPixel } from "./packets/pixel"
 import { createPingPacket } from "./packets/ping"
 
+export type BotConstructor = {
+    autoReconnect: boolean,
+    botName: string, 
+    botChatId: number, 
+    botCountry: string
+}
+
 /**
  * Events:
  * @emits open
@@ -37,30 +44,51 @@ export class Bot extends EventEmitter {
     private botName: string
     private botChatId: number
     private botCountry: string
+    private autoReconnect: boolean
+    private url?: string
+    private apiKey?: string
 
     private timeLastPing: number = 0
     private timeLastSent: number = 0
     private heartbeatTimer?: NodeJS.Timer
     
-    constructor(botName: string="Bot", botChatId: number=0, botCountry: string="zz") {
+    constructor(
+        data: BotConstructor = {
+            autoReconnect: true,
+            botName: "Bot",
+            botChatId: 0,
+            botCountry: "zz"
+        }
+    ) {
         super()
-        this.botName = botName
-        this.botChatId = botChatId
-        this.botCountry = botCountry
+        this.botName = data.botName
+        this.botChatId = data.botChatId
+        this.botCountry = data.botCountry
+        this.autoReconnect = data.autoReconnect
     }
 
     async connect(url: string, apiKey: string, subscriptions: Subscriptions = 0) {
-        
+        this.url = url
+        this.apiKey = apiKey
         this.subscriptions = subscriptions
-        
-        await new Promise((resolve, reject) => {
+        return this._connect()
+    }
+
+    protected async _connect() {
+
+        return await new Promise((resolve, reject) => {
+            
+            if(!this.url || !this.apiKey) {
+                reject("Malformed URL or Api Key")
+                return;
+            }
 
             this._ws = new WebSocket(
-                url,
+                this.url,
                 {
                     perMessageDeflate: false,
                     headers: {
-                        'Authorization': `Bearer ${apiKey}`
+                        'Authorization': `Bearer ${this.apiKey}`
                     }
                 }
             )
@@ -95,7 +123,6 @@ export class Bot extends EventEmitter {
             return
 
         // Subscriptions
-
         if(this.checkSubscribed(Subscriptions.CHAT))
             this._ws.send(
                 JSON.stringify(
@@ -137,7 +164,8 @@ export class Bot extends EventEmitter {
     protected heartbeat(): boolean {
 
         if (this._ws?.readyState !== WebSocket.OPEN) {
-            this.close("Websocket is closed somehow")
+            this.close(`Websocket is closed somehow ${this.autoReconnect ? ", reconnecting..." : "."}`)
+            if(this.autoReconnect) this._connect()
             return false
         }
 
