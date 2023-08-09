@@ -1,16 +1,16 @@
-import { 
-    Bot, 
+import {  
     Channel, 
     Subscriptions, 
     Message, 
-    OnlineData 
+    OnlineData, 
+    CPNBot
 } from "../src";
 
 import * as config from "./config.json";
 import { info } from "./logger";
 
 // Connection
-const bot = new Bot()
+const bot = new CPNBot()
 
 /**
  * Log when channels loaded
@@ -22,6 +22,12 @@ bot.on("channelsLoaded", (channels: Channel[]) => {
     );
 
     info(`Subscribed channels: ${chatNames.join(", ")}`)
+
+    const channel = bot.getChannelByName("en")
+    if(!channel) return;
+    bot.sendAnnouncement("Test announcement", channel, true).then((data: any) => {
+        info(`Announcement sent, total receivers: ${data[0]}`)
+    });
     
 })
 
@@ -66,4 +72,4 @@ bot.connect(
     bot.fetchFlag(1).then((data) => {
         info(`Flag: ${data[0]}, ID: ${data[1]}`)
     })
-})
+})  

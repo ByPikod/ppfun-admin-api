@@ -200,11 +200,20 @@ export class Bot extends EventEmitter {
 
         const type: string = jsondata[0]
         const rest = jsondata.splice(1)
+        this.handleTextPacket(type, rest)
+
+    }
+
+    /**
+     * Decide what we should do with the received packet name.
+     * @param type 
+     */
+    protected handleTextPacket(type: string, data: any) {
 
         switch(type){
 
             case 'chans':
-                const channels = receivedChannels(this, rest)
+                const channels = receivedChannels(this, data)
                 for(const channel of channels) {
                     this.channels.set(
                         channel.getId(),
@@ -215,12 +224,12 @@ export class Bot extends EventEmitter {
                 break
 
             case 'msg':
-                const message = recievedMessage(this, rest)
+                const message = recievedMessage(this, data)
                 this.emit("chatMessage", message)
                 break
             
             case 'flag':
-                this.emit('flag', rest)
+                this.emit('flag', data)
                 break
                 
         }
