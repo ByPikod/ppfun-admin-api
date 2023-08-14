@@ -6,11 +6,11 @@ import { Message } from "./message";
  */
 export class Channel {
 
-    private messages: Array<Message> = []
+    protected messages: Array<Message> = []
 
-    private bot: Bot
-    private id: number
-    private name: string
+    protected bot: Bot
+    protected id: number
+    protected name: string
 
     constructor(bot: Bot, id: number, name: string) {
         this.bot = bot
@@ -46,6 +46,14 @@ export class Channel {
      */
     getName(): string {
         return this.name;
+    }
+
+    /**
+     * Returns the parent bot.
+     * @returns Bot
+     */
+    getBot(): Bot {
+        return this.bot;
     }
 
     /**

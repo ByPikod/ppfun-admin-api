@@ -296,7 +296,7 @@ export class Bot extends EventEmitter {
         authorFlag: string
     ): User {
         
-        const user = new User(authorId, authorName, authorFlag)
+        const user = new User(authorId, authorName, authorFlag, this)
         this.users[user.getId()] = user
         
         return user

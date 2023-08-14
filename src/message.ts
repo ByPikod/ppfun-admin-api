@@ -1,3 +1,4 @@
+import { Bot } from "./bot";
 import { Channel } from "./channel";
 import { User } from "./user";
 import { createMention } from "./utils";
@@ -5,13 +6,15 @@ import { createMention } from "./utils";
 export class Message {
 
     private author: User
-    private chat: Channel
+    private channel: Channel
     private content: string
+    private bot: Bot
 
-    constructor(author: User, chat: Channel, content: string) {
+    constructor(author: User, channel: Channel, content: string) {
         this.author = author;
-        this.chat = chat;
+        this.channel = channel;
         this.content = content;
+        this.bot = channel.getBot();
     }
 
     /**
@@ -27,7 +30,7 @@ export class Message {
      * @returns 
      */
     getChatRoom(): Channel {
-        return this.chat;
+        return this.channel;
     }
 
     /**
@@ -36,6 +39,14 @@ export class Message {
      */
     getContent(): string {
         return this.content;
+    }
+
+    /**
+     * Returns the parent bot.
+     * @returns Bot
+     */
+    getBot(): Bot {
+        return this.bot;
     }
 
     /**
@@ -56,7 +67,7 @@ export class Message {
             author.getName(),
             author.getId()
         )
-        this.chat.sendMessage(
+        this.channel.sendMessage(
             `${mention}, ${message}`, 
             name, 
             userId, 
