@@ -17,6 +17,9 @@
     "lint": "tslint -p tsconfig.json",
     "lint:bot": "tslint -p tsconfig.bot.json"
   },
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com/@ByPikod"
+  },
   "repository": {
     "type": "git",
     "url": "https://github.com/ByPikod/ppfun-admin-api.git"
