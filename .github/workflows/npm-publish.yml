@@ -44,8 +44,8 @@ jobs:
           registry-url: https://npm.pkg.github.com/
           scope: '@ByPikod'
       - run: node ".github/workflows/gpr.js"
-      - run: echo registry=https://npm.pkg.github.com/ByPikod >> .npmrc
       - run: npm ci
+      - run: echo registry=https://npm.pkg.github.com/ByPikod >> .npmrc
       - run: npm publish
         env:
           NODE_AUTH_TOKEN: ${{secrets.publish_github_token}}
