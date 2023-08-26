@@ -9,8 +9,10 @@ export class Message {
     private channel: Channel
     private content: string
     private bot: Bot
+    private created_at: number; // unix timestamp
 
     constructor(author: User, channel: Channel, content: string) {
+        this.created_at = Date.now();
         this.author = author;
         this.channel = channel;
         this.content = content;
@@ -39,6 +41,13 @@ export class Message {
      */
     getContent(): string {
         return this.content;
+    }
+
+    /**
+     * Returns the unix timestamp of the time message created.
+     */
+    getCreationTime(){
+        return this.created_at;
     }
 
     /**
