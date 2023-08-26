@@ -1,6 +1,7 @@
 import { Bot } from "./bot"
+import { MessageHolder } from "./message-holder"
 
-export class User {
+export class User extends MessageHolder {
 
     private id: number
     private name: string
@@ -8,10 +9,11 @@ export class User {
     private bot: Bot
 
     constructor(id: number, name: string, flag: string, bot: Bot) {
+        super()
         this.id = id
         this.name = name
         this.flag = flag
-        this.bot = bot;
+        this.bot = bot
     }
 
     /**

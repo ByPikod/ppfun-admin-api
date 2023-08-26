@@ -1,35 +1,21 @@
 import { Bot } from "./bot";
 import { Message } from "./message";
+import { MessageHolder } from "./message-holder";
 
 /**
  * Represents a chat room in the chat.
  */
-export class Channel {
-
-    protected messages: Array<Message> = []
+export class Channel extends MessageHolder {
 
     protected bot: Bot
     protected id: number
     protected name: string
 
     constructor(bot: Bot, id: number, name: string) {
+        super()
         this.bot = bot
         this.id = id
         this.name = name
-    }
-
-    /**
-     * On received a message
-     * @param user Message author
-     * @param message Message Content
-     */
-    _addMessage(message: Message) {
-        
-        this.messages.push(message)
-        
-        if(this.messages.length >= 50)
-            this.messages.shift();
-
     }
 
     /**
