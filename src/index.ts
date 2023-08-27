@@ -5,6 +5,7 @@ export * from './message'
 export * from './exceptions'
 export * from './subscriptions'
 export * from './cpnbot'
+export * from './message-history'
 
 export { OnlineData } from './packets/online'
 export { RawPixelData as PixelData } from './packets/pixel'

@@ -1,15 +1,15 @@
 import { Bot } from "./bot"
-import { MessageHolder } from "./message-holder"
+import { MessageHistory } from "./message-history"
 
-export class User extends MessageHolder {
+export class User {
 
     private id: number
     private name: string
     private flag: string
     private bot: Bot
+    private messageHistory = new MessageHistory();
 
     constructor(id: number, name: string, flag: string, bot: Bot) {
-        super()
         this.id = id
         this.name = name
         this.flag = flag
@@ -46,6 +46,14 @@ export class User extends MessageHolder {
      */
     getBot(): Bot {
         return this.bot;
+    }
+
+    /**
+     * Returns the message history object
+     * @returns MessageHistory
+     */
+    getMessageHistory(): MessageHistory {
+        return this.messageHistory;
     }
 
 }

@@ -1,6 +1,6 @@
 import { Message } from "./message";
 
-export abstract class MessageHolder {
+export class MessageHistory {
     
     protected messages: Array<Message> = []
 
@@ -61,21 +61,21 @@ export abstract class MessageHolder {
     }
 
     /**
-     * Returns message by author name
+     * Returns messages by the author's name
      * @param name Author name
      * @returns Message
      */
-    public getMessageByAuthorName(name: string): Message | undefined {
-        return this.messages.find(message => message.getAuthor().getName() === name)
+    public getMessagesByAuthorName(name: string): Array<Message> {
+        return this.messages.filter(m => m.getAuthor().getName() === name);
     }
 
     /**
-     * Returns message by author ID
+     * Returns messages by the author's ID
      * @param id Author ID
      * @returns Message
      */
-    public getMessageByAuthorID(id: number): Message | undefined {
-        return this.messages.find(m => m.getAuthor().getId() === id)
+    public getMessagesByAuthorID(id: number): Array<Message> {
+        return this.messages.filter(m => m.getAuthor().getId() === id);
     }
 
     /**

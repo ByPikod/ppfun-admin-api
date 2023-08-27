@@ -29,7 +29,7 @@ export function recievedMessage(bot: Bot, data: any): Message {
     /* Get message */
     const message = new Message(user, channel, messageContent) // Create the message
     channel._addMessage(message) // Adds message to the channel's message history
-    user._addMessage(message); // Adds message to the user's message history
+    user.getMessageHistory()._addMessage(message); // Adds message to the user's message history
 
     return message;
 

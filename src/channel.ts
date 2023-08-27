@@ -1,11 +1,11 @@
 import { Bot } from "./bot";
 import { Message } from "./message";
-import { MessageHolder } from "./message-holder";
+import { MessageHistory } from "./message-history";
 
 /**
  * Represents a chat room in the chat.
  */
-export class Channel extends MessageHolder {
+export class Channel extends MessageHistory {
 
     protected bot: Bot
     protected id: number
