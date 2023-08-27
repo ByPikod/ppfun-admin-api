@@ -9,7 +9,7 @@ export class MessageHistory {
      * Maximum 50 messages are stored.
      * @returns Message
      */
-    public getOldestMessage(): Message {
+    public getOldestMessage(): Message | undefined {
         return this.messages[0];
     }
 
@@ -17,7 +17,7 @@ export class MessageHistory {
      * Returns the last message
      * @returns Message
      */
-    public getLastMessage(): Message {
+    public getLastMessage(): Message | undefined {
         return this.messages[this.messages.length - 1];
     }
 
