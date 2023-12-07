@@ -6,13 +6,15 @@ export class User {
     private id: number
     private name: string
     private flag: string
+    private badges: string
     private bot: Bot
     private messageHistory = new MessageHistory();
 
-    constructor(id: number, name: string, flag: string, bot: Bot) {
+    constructor(id: number, name: string, flag: string, badges: string, bot: Bot) {
         this.id = id
         this.name = name
         this.flag = flag
+        this.badges = badges
         this.bot = bot
     }
 
@@ -31,7 +33,7 @@ export class User {
     getName(): string {
         return this.name;
     }
-    
+
     /**
      * Returns user flag
      * @returns 

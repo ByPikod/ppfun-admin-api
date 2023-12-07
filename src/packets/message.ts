@@ -8,22 +8,23 @@ import { Message } from "../message"
  * @returns Message
  */
 export function recievedMessage(bot: Bot, data: any): Message {
-            
+
     const authorName = data[0]
     const authorId = data[1]
     const messageContent = data[2]
     const authorFlag = data[3]
-    const channelId = data[4]
+    const authorBadges = data[4]
+    const channelId = data[5]
 
     /* Get user */
     let user = bot.getUserById(authorId)
     if (user === undefined) {
-        user = bot._createUser(authorId, authorName, authorFlag);
+        user = bot._createUser(authorId, authorName, authorFlag, authorBadges);
     }
 
     /* Get channel */
     const channel = bot.getChannelById(channelId)
-    if(channel === undefined)
+    if (channel === undefined)
         throw new BotFailedToFetchChannel(channelId);
 
     /* Get message */

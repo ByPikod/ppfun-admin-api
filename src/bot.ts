@@ -16,8 +16,8 @@ import { createPingPacket } from "./packets/ping"
 
 export type BotConstructor = {
     autoReconnect: boolean,
-    botName: string, 
-    botChatId: number, 
+    botName: string,
+    botChatId: number,
     botCountry: string
 }
 
@@ -32,7 +32,7 @@ export type BotConstructor = {
  * @emits heartbeat
  */
 export class Bot extends EventEmitter {
-    
+
     _ws: WebSocket | undefined
     _timeout: number = 5000
 
@@ -51,7 +51,7 @@ export class Bot extends EventEmitter {
     private timeLastPing: number = 0
     private timeLastSent: number = 0
     private heartbeatTimer?: NodeJS.Timer
-    
+
     constructor(
         data: BotConstructor = {
             autoReconnect: true,
@@ -77,8 +77,8 @@ export class Bot extends EventEmitter {
     protected async _connect() {
 
         return await new Promise((resolve, reject) => {
-            
-            if(!this.url || !this.apiKey) {
+
+            if (!this.url || !this.apiKey) {
                 reject("Malformed URL or Api Key")
                 return;
             }
@@ -92,7 +92,7 @@ export class Bot extends EventEmitter {
                     }
                 }
             )
-            
+
             this._ws.onerror = (err) => {
                 this.emit('error', err)
                 reject(err)
@@ -111,7 +111,7 @@ export class Bot extends EventEmitter {
         })
 
     }
-    
+
     //*****************************//
     //        EVENT LISTENERS
     //*****************************//
@@ -123,34 +123,34 @@ export class Bot extends EventEmitter {
             return
 
         // Subscriptions
-        if(this.checkSubscribed(Subscriptions.CHAT))
+        if (this.checkSubscribed(Subscriptions.CHAT))
             this._ws.send(
                 JSON.stringify(
                     ["sub", "chat"]
                 )
             )
 
-        if(this.checkSubscribed(Subscriptions.ONLINE))
+        if (this.checkSubscribed(Subscriptions.ONLINE))
             this._ws.send(
                 JSON.stringify(
                     ["sub", "online"]
                 )
             )
 
-        if(this.checkSubscribed(Subscriptions.PIXEL))
+        if (this.checkSubscribed(Subscriptions.PIXEL))
             this._ws.send(
                 JSON.stringify(
                     ["sub", "pxl"]
                 )
             )
-        
+
         // Health checks
         const now = Date.now()
         this.timeLastPing = now
         this.timeLastSent = now
 
         this.heartbeatTimer = setInterval(this.heartbeat.bind(this), 2000)
-            
+
     }
 
     //*****************************//
@@ -165,7 +165,7 @@ export class Bot extends EventEmitter {
 
         if (this._ws?.readyState !== WebSocket.OPEN) {
             this.close(`Websocket is closed somehow ${this.autoReconnect ? ", reconnecting..." : "."}`)
-            if(this.autoReconnect) this._connect()
+            if (this.autoReconnect) this._connect()
             return false
         }
 
@@ -185,7 +185,7 @@ export class Bot extends EventEmitter {
      * Handle the packets received.
      * @param packet Packet data
      */
-    protected onPacket({data: packet}: MessageEvent){
+    protected onPacket({ data: packet }: MessageEvent) {
 
         this.timeLastPing = Date.now()
 
@@ -196,7 +196,7 @@ export class Bot extends EventEmitter {
             else
                 this.onBinaryPacket(packet)
 
-          } catch (err) {
+        } catch (err) {
 
             console.log(
                 `An error occurred while parsing websocket message ${packet}`,
@@ -212,15 +212,15 @@ export class Bot extends EventEmitter {
      * @param text received packet
      */
     protected onTextPacket(text: string) {
-    
+
         let jsondata
 
         try {
-        
+
             jsondata = JSON.parse(text)
-        
+
         } catch {
-            
+
             console.error(`Failed to parse packet: ${text}`)
             return
 
@@ -238,15 +238,15 @@ export class Bot extends EventEmitter {
      */
     protected handleTextPacket(type: string, data: any) {
 
-        switch(type){
+        switch (type) {
 
             case 'chans':
                 const channels = receivedChannels(this, data)
-                for(const channel of channels) {
+                for (const channel of channels) {
                     this.channels.set(
                         channel.getId(),
                         channel
-                    )   
+                    )
                 }
                 this.emit("channelsLoaded", channels)
                 break
@@ -255,35 +255,35 @@ export class Bot extends EventEmitter {
                 const message = recievedMessage(this, data)
                 this.emit("chatMessage", message)
                 break
-            
+
             case 'flag':
                 this.emit('flag', data)
                 break
-                
+
         }
 
     }
 
-    protected onBinaryPacket(buffer: any){
+    protected onBinaryPacket(buffer: any) {
 
-        if(buffer instanceof Buffer) buffer = toArrayBuffer(buffer)
+        if (buffer instanceof Buffer) buffer = toArrayBuffer(buffer)
         if (buffer.byteLength === 0) return
-        
+
         const data = new DataView(buffer)
         const opcode = data.getUint8(0)
 
-        switch(opcode) {
-            
+        switch (opcode) {
+
             case Packets.ONLINE_COUNTER_OP:
                 this.online = receivedOnline(this, data)
                 break
-            
+
             case Packets.PIXEL_UPDATE_OP:
                 receivedPixel(this, data)
                 break
 
         }
-    
+
     }
 
     /**
@@ -291,14 +291,15 @@ export class Bot extends EventEmitter {
      * @param name
      */
     _createUser(
-        authorId: number, 
-        authorName: string, 
-        authorFlag: string
+        authorId: number,
+        authorName: string,
+        authorFlag: string,
+        authorBadges: string
     ): User {
-        
-        const user = new User(authorId, authorName, authorFlag, this)
+
+        const user = new User(authorId, authorName, authorFlag, authorBadges, this)
         this.users[user.getId()] = user
-        
+
         return user
 
     }
@@ -318,7 +319,7 @@ export class Bot extends EventEmitter {
         return true
     }
 
-    
+
     //*****************************//
     //             API
     //*****************************//
@@ -329,9 +330,9 @@ export class Bot extends EventEmitter {
      * @returns
      */
     fetchFlag(userId: number): Promise<[string, string]> {
-        
+
         return promiseWithTimeout(this._timeout, new Promise((res) => {
-            
+
             this._ws?.send(
                 JSON.stringify(
                     ["getflag", userId]
@@ -339,11 +340,11 @@ export class Bot extends EventEmitter {
             )
 
             const flagListener = (data: any) => {
-                if(data[0] === userId) res(data)
+                if (data[0] === userId) res(data)
                 // listen once more
                 this.once("flag", flagListener)
-            } 
-    
+            }
+
             this.once("flag", flagListener)
 
         }))
@@ -365,13 +366,13 @@ export class Bot extends EventEmitter {
      * @returns Channel
      */
     getChannelByName(name: string): Channel | undefined {
-        
-        for(const channel of this.channels.values()){
-            if(channel.getName() == name) return channel
+
+        for (const channel of this.channels.values()) {
+            if (channel.getName() == name) return channel
         }
 
         return undefined
-        
+
     }
 
     /**
@@ -438,7 +439,7 @@ export class Bot extends EventEmitter {
     getBotName(): string {
         return this.botName
     }
-    
+
     /**
      * Set chat id
      * @param id New ID
@@ -480,11 +481,11 @@ export class Bot extends EventEmitter {
      */
     broadcastMessage(
         message: string,
-        name?: string, 
+        name?: string,
         userId?: number,
         country?: string
     ) {
-        for(const channel of this.channels.values()){
+        for (const channel of this.channels.values()) {
             channel.sendMessage(message, name, userId, country)
         }
     }
