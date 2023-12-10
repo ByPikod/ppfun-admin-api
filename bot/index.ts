@@ -1,8 +1,8 @@
-import {  
-    Channel, 
-    Subscriptions, 
-    Message, 
-    OnlineData, 
+import {
+    Channel,
+    Subscriptions,
+    Message,
+    OnlineData,
     CPNBot
 } from "../src";
 
@@ -16,7 +16,7 @@ const bot = new CPNBot()
  * Log when channels loaded
  */
 bot.on("channelsLoaded", (channels: Channel[]) => {
-    
+
     const chatNames = channels.map(
         (channel: Channel) => channel.getName()
     );
@@ -24,24 +24,24 @@ bot.on("channelsLoaded", (channels: Channel[]) => {
     info(`Subscribed channels: ${chatNames.join(", ")}`)
 
     const channel = bot.getChannelByName("en")
-    if(!channel) return;
-    
+    if (!channel) return;
+
     /*
     bot.sendAnnouncement("Test announcement", channel, true).then((data: any) => {
         info(`Announcement sent, total receivers: ${data[0]}`)
     });
     */
-    
+
 })
 
 /**
  * Log chat messages
  */
 bot.on("chatMessage", (message: Message) => {
-    
+
     info(
         `[${message.getAuthor().getFlag()}] ` +
-        `${message.getAuthor().getName()} > ` + 
+        `${message.getAuthor().getName()} > ` +
         `${message.getChatRoom().getName()}: ` +
         `${message.getContent()}`
     )
@@ -70,7 +70,7 @@ bot.on("heartbeat", () => {
 bot.on("open", () => {
 
     info("Bot connected!")
-    
+
     // Try fetch flag feature
     bot.fetchFlag(1).then((data) => {
         info(`Flag: ${data[0]}, ID: ${data[1]}`)
@@ -84,7 +84,7 @@ bot.on("open", () => {
 })
 
 bot.connect(
-    config.url, 
+    config.url,
     config.apiKey,
     Subscriptions.CHAT + Subscriptions.ONLINE
 )

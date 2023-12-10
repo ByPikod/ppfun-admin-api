@@ -36,21 +36,21 @@ export class Bot extends EventEmitter {
     _ws: WebSocket | undefined
     _timeout: number = 5000
 
-    private subscriptions: Subscriptions = 0
-    private channels = new Map<number, Channel>()
-    private users: Array<User> = []
-    private online: OnlineData = { total: 0 }
+    protected subscriptions: Subscriptions = 0
+    protected channels = new Map<number, Channel>()
+    protected users: Array<User> = []
+    protected online: OnlineData = { total: 0 }
 
-    private botName: string
-    private botChatId: number
-    private botCountry: string
-    private autoReconnect: boolean
-    private url?: string
-    private apiKey?: string
+    protected botName: string
+    protected botChatId: number
+    protected botCountry: string
+    protected autoReconnect: boolean
+    protected url?: string
+    protected apiKey?: string
 
-    private timeLastPing: number = 0
-    private timeLastSent: number = 0
-    private heartbeatTimer?: NodeJS.Timer
+    protected timeLastPing: number = 0
+    protected timeLastSent: number = 0
+    protected heartbeatTimer?: NodeJS.Timer
 
     constructor(
         data: BotConstructor = {
@@ -158,7 +158,7 @@ export class Bot extends EventEmitter {
     //*****************************//
 
     /**
-     * Pping the server in every 5 seconds.
+     * Ping the server every 5 seconds.
      * @returns Returns false if connection is terminated.
      */
     protected heartbeat(): boolean {
@@ -293,11 +293,10 @@ export class Bot extends EventEmitter {
     _createUser(
         authorId: number,
         authorName: string,
-        authorFlag: string,
-        authorBadges: string
+        authorFlag: string
     ): User {
 
-        const user = new User(authorId, authorName, authorFlag, authorBadges, this)
+        const user = new User(authorId, authorName, authorFlag, this)
         this.users[user.getId()] = user
 
         return user

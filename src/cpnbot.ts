@@ -1,6 +1,7 @@
 import { Bot } from "./bot"
 import { Channel } from "./channel"
 import { User } from "./user"
+import { CPNUser } from "./cpnuser"
 import { promiseWithTimeout } from "./utils"
 
 /**
@@ -13,14 +14,14 @@ export class CPNBot extends Bot {
      * CPN special packet handler.
      */
     protected handleTextPacket(type: string, data: any): void {
-        
 
-        switch(type) {
+
+        switch (type) {
             case "announceRes":
                 this.emit("announceRes", data)
                 return
         }
-        
+
         super.handleTextPacket(type, data)
 
     }
@@ -32,22 +33,22 @@ export class CPNBot extends Bot {
      * @param popup Message will pop up if true.
      */
     sendAnnouncement(
-        message: string, 
+        message: string,
         receiver: Channel | User | number,
         popup: boolean
     ): Promise<number> {
         return promiseWithTimeout(this._timeout, new Promise((res, rej) => {
-            
+
             const toUser = !(receiver instanceof Channel)
 
             // Turn reciever data to id.
             let receiverId: number
-            if(toUser) {
-                if(receiver instanceof User) 
+            if (toUser) {
+                if (receiver instanceof User)
                     receiverId = receiver.getId()
                 else
                     receiverId = receiver
-            }else
+            } else
                 receiverId = receiver.getId()
 
             // Send the packet
@@ -56,19 +57,34 @@ export class CPNBot extends Bot {
                     ["announce", message, receiverId, popup, toUser]
                 )
             )
-            
+
             // Wait for response
             const respondListener = (data: any) => {
-                if(data[1] !== undefined) {
+                if (data[1] !== undefined) {
                     rej(data[1]);
                     return;
                 }
                 res(data)
             }
-    
+
             this.once("announceRes", respondListener)
 
         }))
+    }
+
+    /**
+     * Create a channel room to listen it.
+     * @param name
+     */
+    _createCPNUser(
+        authorId: number,
+        authorName: string,
+        authorFlag: string,
+        authorBadges: string
+    ): CPNUser {
+        const user = new CPNUser(authorId, authorName, authorFlag, authorBadges, this)
+        this.users[user.getId()] = user as User
+        return user
     }
 
 }

@@ -1,25 +1,45 @@
 import { BotFailedToFetchChannel } from "../exceptions"
 import { Bot } from "../bot"
 import { Message } from "../message"
+import { CPNBot } from "../cpnbot"
+
+/**
+ * We need to check if the bot is a CPNBot or not in the runtime
+ * because typescript somehow doesn't allow us to check if the bot is a CPNBot
+ * @param bot 
+ * @returns boolean
+ */
+function isCpnBot(bot: Bot) {
+    return (bot as CPNBot).sendAnnouncement !== undefined;
+}
 
 /**
  * Turns the data pack into a Message object and reutrns it
  * @param data
  * @returns Message
  */
-export function recievedMessage(bot: Bot, data: any): Message {
+export function recievedMessage(bot: Bot | CPNBot, data: any): Message {
 
     const authorName = data[0]
     const authorId = data[1]
     const messageContent = data[2]
     const authorFlag = data[3]
-    const authorBadges = data[4]
-    const channelId = data[5]
+
+    let authorBadges, channelId;
+    if (isCpnBot(bot)) {
+        authorBadges = data[4]
+        channelId = data[5];
+    } else {
+        channelId = data[4];
+    }
 
     /* Get user */
     let user = bot.getUserById(authorId)
     if (user === undefined) {
-        user = bot._createUser(authorId, authorName, authorFlag, authorBadges);
+        if (isCpnBot(bot))
+            user = (bot as CPNBot)._createCPNUser(authorId, authorName, authorFlag, authorBadges);
+        else
+            user = bot._createUser(authorId, authorName, authorFlag);
     }
 
     /* Get channel */
